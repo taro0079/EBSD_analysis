@@ -1,4 +1,4 @@
-from os import path, supports_follow_symlinks
+import os
 from typing import List
 import pandas as pd
 import numpy as np
