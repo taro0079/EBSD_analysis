@@ -1,11 +1,18 @@
 from os import path, supports_follow_symlinks
 import pandas as pd
 import numpy as np
+import os
+
+from pandas.core import base
 
 
 class Txt_data:
     def __init__(self, path) -> None:
         self.path: str = path
+
+    def get_basename(self):
+        basename = os.path.basename(self.path)
+        return basename.split(sep=".")[0]
 
     def _all_lines_read(self):
         f = open(self.path)
@@ -50,11 +57,15 @@ class csvRepo:
     def __init__(self, data) -> None:
         self.data = data
     
+    def write(self, writepath):
+        self.data.to_csv(writepath)
+    
 
 def main():
     textdata = Txt_data(path="./Nb2Ti1Hf-Cu14Sn_grain.txt")
+
     data = textdata.read_data()
-    print(data.data)
+    print(textdata.get_basename())
 
 
 if __name__ == "__main__":
