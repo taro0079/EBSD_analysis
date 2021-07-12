@@ -46,6 +46,10 @@ class Data:
     def __init__(self, data) -> None:
         self.data = data
 
+class csvRepo:
+    def __init__(self, data) -> None:
+        self.data = data
+    
 
 def main():
     textdata = Txt_data(path="./Nb2Ti1Hf-Cu14Sn_grain.txt")
