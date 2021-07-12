@@ -55,6 +55,15 @@ class Txt_data:
         df.columns = header_blank_deleted
         return morphological_data(df)
 
+    # misorientation用読み込み関数
+    def read_misorientation_data(self):
+        lines = self._all_lines_read()
+        header_deleted_lines = self._delete_header(lines)
+        splited_lines = self._line_split(header_deleted_lines)
+        float_list = self._convert_to_float(splited_lines)
+        df = pd.DataFrame(float_list)[:, :5]
+        return misorientation(df)
+
 
 class morphological_data:
     def __init__(self, data) -> None:
@@ -132,17 +141,44 @@ class morphological_data:
         })
         return csvRepo(df)
 
+
+class misorientation:
+    def __init__(self, data) -> None:
+        self._phi1 = data.iloc[:, 0]
+        self._PHI = data.iloc[:, 1]
+        self._phi2 = data.iloc[:, 2]
+        self._xdata = data.iloc[:, 3]
+        self._ydata = data.iloc[:, 4]
+        self._vc = np.array([0,0,1])
+
+    # オイラー角 -> デカルト座標系変換用行列1
+    def _make_g1(self):
+        return np.array([[np.cos(self._phi1), np.sin(self._phi1), 0], [-np.sin(self._phi1), np.cos(self._phi1), 0], [0, 0, 1]])
+
+    # オイラー角 -> デカルト座標系変換用行列2
+    def _make_g2(self):
+        return np.array([[1, 0, 0], [0, np.cos(self._PHI), np.sin(self._PHI)], [0, -np.sin(self._PHI), np.cos(self._PHI)]])
+
+    # オイラー角 -> デカルト座標系変換用行列3
+    def _make_g3(self):
+        return np.array([np.cos(self._phi2), np.sin(self._phi2), 0], [-np.sin(self._phi2), np.cos(self._phi2), 0], [0, 0, 1])
+    
+    # オイラー角 -> デカルト座標系変換用行列
+    def make_gmat(self):
+        return np.dot(np.dot(self._make_g1(), self._make_g2()), self._make_g3())
+
+
 class csvRepo:
     def __init__(self, data) -> None:
         self.data = data
-    
+
     def _make_path(self, writepath):
         return writepath + '.csv'
 
     def write(self, writepath):
         path = self._make_path(writepath)
         self.data.to_csv(path)
-    
+
 
 def main():
     textdata = Txt_data(path="./Nb4Ta1Hf-Cu14Sn_grain.txt")
