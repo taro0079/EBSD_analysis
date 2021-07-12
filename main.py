@@ -130,23 +130,25 @@ class morphological_data:
             'equiaxedArea': [self.get_equiaxedgrain_areafraction()],
             'columnarArea': [self._get_columnargrain_areafraction()]
         })
-        return df
+        return csvRepo(df)
 
 class csvRepo:
     def __init__(self, data) -> None:
         self.data = data
     
+    def _make_path(self, writepath):
+        return writepath + '.csv'
+
     def write(self, writepath):
-        self.data.to_csv(writepath)
+        path = self._make_path(writepath)
+        self.data.to_csv(path)
     
 
 def main():
-    textdata = Txt_data(path="./Nb2Ti1Hf-Cu14Sn_grain.txt")
+    textdata = Txt_data(path="./Nb4Ta1Hf-Cu14Sn_grain.txt")
     data = textdata.read_morphological_data()
-    gs = data.calc_grainsize_areafraction()
-    gar = data.calc_aspectratio_areafraction()
-    eq = data.get_equiaxedgrain_areafraction()
-    print(data.create_data())
+    writedata = data.create_data()
+    writedata.write(textdata.get_basename())
 
 
 if __name__ == "__main__":
