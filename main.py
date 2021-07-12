@@ -2,9 +2,8 @@ from os import path, supports_follow_symlinks
 from typing import List
 import pandas as pd
 import numpy as np
-import os
-
-from pandas.core import base
+import scipy.stats as stats
+from scipy.stats.stats import sem
 
 
 class Txt_data:
@@ -64,7 +63,7 @@ class morphological_data:
         # grain areaからそれぞれのgrain sizeを算出
         self.grainsize = 2 * np.sqrt(data.iloc[:, 1] / np.pi)
         self.aspectratio = data.iloc[:, 3]
-        self.theshold = 0.5 # theshold for columar of equiaxed grains
+        self.theshold = 0.5  # theshold for columar of equiaxed grains
 
     # Number fractionの算出関数（単なる平均）
     def _calculation_of_number_fraction(self, inputdata):
@@ -85,11 +84,11 @@ class morphological_data:
     # 平均アスペクト比を算出し100をかけて%に変換 (in number fraction)
     def calc_aspectratio_numberfraction(self):
         return self._calculation_of_number_fraction(self.aspectratio) * 100
-    
+
     # 平均アスペクト比を算出し100をかけて%に変換 (in area fraction)
     def calc_aspectratio_areafraction(self):
         return self._calclation_of_area_fraction(self.aspectratio) * 100
-    
+
     #  結晶面積の合計（= 分析面積）
     def _get_grainarea_sum(self):
         return np.sum(self.grainarea)
@@ -100,26 +99,38 @@ class morphological_data:
 
     # 等軸結晶領域の面積合計
     def _sum_of_equiaxed(self) -> float:
-        return np.sum(self.grainarea[self.get_equiaxed_condition()])
+        return np.sum(self.grainarea[self._get_equiaxed_condition()])
 
     # 等軸結晶領域比（%）の算出関数
     def get_equiaxedgrain_areafraction(self) -> float:
-        return self._sum_of_equiaxed() / self.get_grainarea_sum() * 100
+        return self._sum_of_equiaxed() / self._get_grainarea_sum() * 100
 
     # 柱状結晶の基準を設定
     def _get_columnar_condition(self) -> List[bool]:
         return (self.aspectratio < self.theshold).values
-    
+
     # 柱状結晶領域の面積合計を算出
     def _sum_of_columnar(self) -> float:
         return np.sum(self.grainarea[self._get_columnar_condition()])
 
     # 等軸結晶領域比（%）を算出
     def _get_columnargrain_areafraction(self) -> float:
-        return self._sum_of_columnar() / self.get_grainarea_sum() * 100
+        return self._sum_of_columnar() / self._get_grainarea_sum() * 100
 
-
-
+    def create_data(self):
+        df = pd.DataFrame({
+            'avegsnum': [self.calc_grainsize_numberfraction()],
+            'avegsarea': [self.calc_grainsize_areafraction()],
+            'gsstd': [np.std(self.grainsize)*1000],
+            'gssem': [stats.sem(self.grainsize)*1000],
+            'garnum': [self.calc_aspectratio_numberfraction()],
+            'gararea': [self.calc_aspectratio_areafraction()],
+            'garstd': [np.std(self.aspectratio)*100],
+            'garsem': [stats.sem(self.aspectratio)*100],
+            'equiaxedArea': [self.get_equiaxedgrain_areafraction()],
+            'columnarArea': [self._get_columnargrain_areafraction()]
+        })
+        return df
 
 class csvRepo:
     def __init__(self, data) -> None:
@@ -135,7 +146,7 @@ def main():
     gs = data.calc_grainsize_areafraction()
     gar = data.calc_aspectratio_areafraction()
     eq = data.get_equiaxedgrain_areafraction()
-    print(eq)
+    print(data.create_data())
 
 
 if __name__ == "__main__":
