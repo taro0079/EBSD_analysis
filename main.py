@@ -14,8 +14,8 @@ class Txt_data:
     def _delete_header(self, lines):
         return [i for i in lines if i[0] != "#"]
 
-    def _get_header_section(self, lines):
-        return [line for line in lines if line[0] == "#"][2::]
+    def _get_header_section(self, lines, startrow):
+        return [line for line in lines if line[0] == "#"][startrow::]
 
     def _get_header(self, lines):
         return [line[12:-1] for line in lines]
@@ -32,7 +32,7 @@ class Txt_data:
     def read_data(self):
         lines = self._all_lines_read()
         header_deleted_lines = self._delete_header(lines)
-        header_range = self._get_header_section(lines)
+        header_range = self._get_header_section(lines, startrow=2)
         header = self._get_header(header_range)
         header_blank_deleted = self._delete_blank(header)
         splited_lines = self._line_split(header_deleted_lines)
