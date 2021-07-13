@@ -181,7 +181,7 @@ class csvRepo:
 
 
 def main():
-    textdata = Txt_data(path="./Nb4Ta1Hf-Cu14Sn_grain.txt")
+    textdata = Txt_data(path="./nb_Cu14Sn02Ti.txt")
     data = textdata.read_morphological_data()
     writedata = data.create_data()
     writedata.write(textdata.get_basename())
