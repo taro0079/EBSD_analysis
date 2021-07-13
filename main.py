@@ -74,6 +74,9 @@ class morphological_data:
         self.aspectratio = data.iloc[:, 3]
         self.theshold = 0.5  # theshold for columar of equiaxed grains
 
+    def transfer_to_csvrepo(self):
+        return csvRepo(self.data)
+
     # Number fractionの算出関数（単なる平均）
     def _calculation_of_number_fraction(self, inputdata):
         return np.average(inputdata)
@@ -149,7 +152,7 @@ class misorientation:
         self._phi2 = data.iloc[:, 2]
         self._xdata = data.iloc[:, 3]
         self._ydata = data.iloc[:, 4]
-        self._vc = np.array([0,0,1])
+        self._vc = np.array([0, 0, 1])
 
     # オイラー角 -> デカルト座標系変換用行列1
     def _make_g1(self):
@@ -162,7 +165,7 @@ class misorientation:
     # オイラー角 -> デカルト座標系変換用行列3
     def _make_g3(self):
         return np.array([np.cos(self._phi2), np.sin(self._phi2), 0], [-np.sin(self._phi2), np.cos(self._phi2), 0], [0, 0, 1])
-    
+
     # オイラー角 -> デカルト座標系変換用行列
     def make_gmat(self):
         return np.dot(np.dot(self._make_g1(), self._make_g2()), self._make_g3())
@@ -172,19 +175,29 @@ class csvRepo:
     def __init__(self, data) -> None:
         self.data = data
 
-    def _make_path(self, writepath):
-        return writepath + '.csv'
+    def _make_path_summary(self, writepath):
+        return writepath + '_summary.csv'
 
-    def write(self, writepath):
-        path = self._make_path(writepath)
-        self.data.to_csv(path)
+    def _make_path_all(self, writepath):
+        return writepath + "_all.csv"
+
+    def write_summary(self, writepath):
+        path = self._make_path_summary(writepath)
+        self.data.to_csv(path, index=False)
+
+    def write_all(self, writepath):
+        path = self._make_path_all(writepath)
+        self.data.to_csv(path, index=False)
 
 
 def main():
     textdata = Txt_data(path="./nb_Cu14Sn02Ti.txt")
     data = textdata.read_morphological_data()
+    alldata = data.transfer_to_csvrepo()
+    alldata.write_all(textdata.get_basename())
     writedata = data.create_data()
-    writedata.write(textdata.get_basename())
+    writedata.write_summary(textdata.get_basename())
+    
 
 
 if __name__ == "__main__":
